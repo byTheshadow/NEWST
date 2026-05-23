@@ -83,8 +83,7 @@ export async function addErrorLog(logEntry) {
       await db.errorLogs.bulkDelete(idsToDelete);
     }
   } catch (err) {
-    /* 日志写入本身不能再抛错*/
-    console.warn('[DB] addErrorLog failed:', err);
+    /* 日志写入本身不能再抛错 */
   }
 }
 
@@ -93,7 +92,6 @@ export async function getErrorLogs() {
   try {
     return await db.errorLogs.orderBy('timestamp').reverse().toArray();
   } catch (err) {
-    console.warn('[DB] getErrorLogs failed:', err);
     return [];
   }
 }
@@ -103,6 +101,6 @@ export async function clearErrorLogs() {
   try {
     await db.errorLogs.clear();
   } catch (err) {
-    console.warn('[DB] clearErrorLogs failed:', err);
+    /* 静默 */
   }
 }
