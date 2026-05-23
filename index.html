@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#000000">
   <title>SHADOW</title>
   <link rel="manifest" href="manifest.json">
+
+  <!--============================================================Favicon — 内联SVG，避免404
+       ============================================================ -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23000'/><text x='50' y='58' font-size='28' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'>S</text></svg>" type="image/svg+xml">
 
   <!-- ============================================================
        全局 CSS 样式
@@ -108,7 +112,8 @@
       height: 100dvh;
       margin: 0 auto;
       overflow: hidden;
-      background: var(--bg-primary);}
+      background: var(--bg-primary);
+    }
 
     /* ---- 层级系统 ---- */
     .layer {
@@ -138,7 +143,7 @@
     #layer-onboarding.active { pointer-events: auto; }
     #layer-toast { z-index: 200; pointer-events: none; }
 
-    /* ---- 壁纸层---- */
+    /* ---- 壁纸层 ---- */
     #layer-wallpaper {
       background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       background-size: cover;
@@ -173,7 +178,8 @@
     }
     .statusbar-right {
       display: flex;
-      align-items: center;gap: 6px;
+      align-items: center;
+      gap: 6px;
     }
     .statusbar-right svg {
       width: 18px;
@@ -248,7 +254,7 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       grid-auto-rows: auto;
-      gap: 20px0;
+      gap: 20px 0;
       align-content: start;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
@@ -408,8 +414,7 @@
     .widget-image {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      border-radius: 12px;
+      object-fit: cover;border-radius: 12px;
       position: absolute;
       top: 0;
       left: 0;}
@@ -442,8 +447,7 @@
       opacity: 0;
       transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.35s ease;
       overflow: hidden;
-      border-radius: 0;
-    }
+      border-radius: 0;}
     #layer-app.active #app-container {
       transform: scale(1);
       opacity: 1;
@@ -618,7 +622,8 @@
     textarea.input-field {
       resize: none;
       min-height: 80px;
-      line-height: 1.5;}
+      line-height: 1.5;
+    }
     .input-label {
       font-size: 13px;
       color: var(--text-secondary);
@@ -635,8 +640,7 @@
       font-weight: 600;
       cursor: pointer;
       font-family: inherit;
-      transition: opacity 0.2s, transform 0.15s;
-      display: flex;
+      transition: opacity 0.2s, transform 0.15s;display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
@@ -754,16 +758,14 @@
       font-weight: 600;
       text-align: center;
       padding: 12px 16px;
-      color: var(--text-primary);
-    }
+      color: var(--text-primary);}
     .bottom-sheet-body {
       padding: 0 16px 34px;
     }
 
     /* ---- 设置列表样式 ---- */
     .settings-group {
-      margin-bottom: 24px;
-    }
+      margin-bottom: 24px;}
     .settings-group-title {
       font-size: 13px;
       font-weight: 600;
@@ -783,8 +785,7 @@
       justify-content: space-between;
       padding: 12px 16px;
       min-height: 44px;
-      border-bottom: 0.5px solid var(--separator);
-      cursor: pointer;
+      border-bottom: 0.5px solid var(--separator);cursor: pointer;
       transition: background0.15s;
     }
     .settings-item:last-child { border-bottom: none; }
@@ -963,8 +964,7 @@
     }
     .error-log-time {
       color: var(--text-tertiary);
-      margin-bottom: 4px;
-      font-size: 11px;
+      margin-bottom: 4px;font-size: 11px;
     }
     .error-log-type {
       display: inline-block;
@@ -1004,9 +1004,7 @@
     .hidden { display: none !important; }
     .no-scroll { overflow: hidden !important; }</style>
 </head>
-<body>
-
-  <!--============================================================手机容器
+<body><!--============================================================手机容器
        ============================================================ -->
   <div id="phone-container">
 
@@ -1021,8 +1019,10 @@
       <div id="statusbar">
         <span id="statusbar-time">00:00</span>
         <div class="statusbar-right">
-          <svg id="statusbar-wifi" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l33 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-          <svg id="statusbar-battery" viewBox="0 0 24 24"><path d="M17 5H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-1h1c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1h-1V7c0-1.1-.9-2-2-2zm0 12H3V7h14v10z"/></svg>
+          <!--======== WiFi 图标（修正SVG path） ======== -->
+          <svg id="statusbar-wifi" viewBox="0 0 24 24"><path d="M19l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l33 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+          <!-- ======== 电池图标（修正SVG path） ======== -->
+          <svg id="statusbar-battery" viewBox="0 0 24 24"><rect x="2" y="6" width="16" height="12" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect class="battery-fill" x="4" y="8" width="12" height="8" rx="1" fill="currentColor"/><rect x="18" y="9" width="3" height="6" rx="1" fill="currentColor"/></svg>
           <span class="battery-text" id="statusbar-battery-text">100%</span>
         </div>
       </div>
@@ -1068,11 +1068,12 @@
 
     <!-- Layer Onboarding: 首次引导 -->
     <div id="layer-onboarding" class="layer">
-      <!-- 由JS 动态填充 -->
+      <!-- 由JS动态填充 -->
     </div>
 
     <!-- Layer Toast -->
-    <div id="layer-toast" class="layer"></div></div>
+    <div id="layer-toast" class="layer"></div>
+  </div>
 
   <!-- ============================================================
        外部依赖
@@ -1117,3 +1118,4 @@
 
 </body>
 </html>
+
