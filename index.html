@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <title>SHADOW</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- ============================================================
+       全局 CSS 样式
+       ============================================================ -->
+  <style>
+    /*---- CSS变量：深色主题（默认） ---- */
+    :root,
+    [data-theme="dark"] {
+      --bg-primary: #000000;
+      --bg-secondary: #1c1c1e;
+      --bg-tertiary: #2c2c2e;
+      --bg-elevated: #3a3a3c;
+      --text-primary: #ffffff;
+      --text-secondary: #ebebf5cc;
+      --text-tertiary: #ebebf599;
+      --text-quaternary: #ebebf54d;
+      --accent: #0a84ff;
+      --accent-secondary: #30d158;
+      --danger: #ff453a;
+      --warning: #ffd60a;
+      --separator: rgba(84,84,88,0.65);
+      --glass-bg: rgba(30,30,30,0.72);
+      --glass-border: rgba(255,255,255,0.08);
+      --dock-bg: rgba(30,30,30,0.65);
+      --statusbar-text: #ffffff;
+      --bubble-self-bg: #00B900;
+      --bubble-self-text: #ffffff;
+      --bubble-other-bg: #2c2c2e;
+      --bubble-other-text: #ffffff;
+      --chat-bg: #000000;
+      --toast-bg: rgba(60,60,60,0.95);
+      --toast-text: #ffffff;
+      --overlay-bg: rgba(0,0,0,0.5);
+      --input-bg: rgba(118,118,128,0.24);
+      --switch-bg: rgba(120,120,128,0.32);
+      --switch-active: #30d158;
+      --card-bg: rgba(44,44,46,0.8);
+    }
+
+    /* ---- CSS变量：浅色主题 ---- */
+    [data-theme="light"] {
+      --bg-primary: #f2f2f7;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f2f2f7;
+      --bg-elevated: #ffffff;
+      --text-primary: #000000;
+      --text-secondary: #3c3c4399;
+      --text-tertiary: #3c3c434d;
+      --text-quaternary: #3c3c4329;
+      --accent: #007aff;
+      --accent-secondary: #34c759;
+      --danger: #ff3b30;
+      --warning: #ffcc00;
+      --separator: rgba(60,60,67,0.29);
+      --glass-bg: rgba(255,255,255,0.72);
+      --glass-border: rgba(0,0,0,0.06);
+      --dock-bg: rgba(255,255,255,0.65);
+      --statusbar-text: #000000;
+      --bubble-self-bg: #00B900;
+      --bubble-self-text: #ffffff;
+      --bubble-other-bg: #ffffff;
+      --bubble-other-text: #333333;
+      --chat-bg: #e8e8ed;
+      --toast-bg: rgba(240,240,240,0.95);
+      --toast-text: #000000;
+      --overlay-bg: rgba(0,0,0,0.3);
+      --input-bg: rgba(118,118,128,0.12);
+      --switch-bg: rgba(120,120,128,0.16);
+      --switch-active: #34c759;
+      --card-bg: rgba(255,255,255,0.8);
+    }
+
+    /* ---- 全局重置 ---- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #000;
+      color: var(--text-primary);
+      touch-action: manipulation;
+    }
+
+    /* ---- 手机容器 ---- */
+    #phone-container {
+      position: relative;
+      width: 100%;
+      max-width: 430px;
+      height: 100vh;
+      height: 100dvh;
+      margin: 0 auto;
+      overflow: hidden;
+      background: var(--bg-primary);}
+
+    /* ---- 层级系统 ---- */
+    .layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .layer > * {
+      pointer-events: auto;
+    }
+
+    #layer-wallpaper { z-index: 1; }
+    #layer-blur { z-index: 2; }
+    #layer-content { z-index: 3; pointer-events: auto; }
+    #layer-dock { z-index: 4; }
+    #layer-statusbar { z-index: 5; }
+    #layer-app { z-index: 10; pointer-events: none; }
+    #layer-app.active { pointer-events: auto; }
+    #layer-overlay { z-index: 50; pointer-events: none; }
+    #layer-overlay.active { pointer-events: auto; }
+    #layer-lockscreen { z-index: 90; }
+    #layer-boot { z-index: 100; }
+    #layer-onboarding { z-index: 95; pointer-events: none; }
+    #layer-onboarding.active { pointer-events: auto; }
+    #layer-toast { z-index: 200; pointer-events: none; }
+
+    /* ---- 壁纸层---- */
+    #layer-wallpaper {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* ---- 模糊遮罩层 ---- */
+    #layer-blur {
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+      transition: backdrop-filter 0.3s;
+    }
+
+    /* ---- 状态栏 ---- */
+    #statusbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      color: var(--statusbar-text);
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 5;
+    }
+    #statusbar-time {
+      font-variant-numeric: tabular-nums;
+    }
+    .statusbar-right {
+      display: flex;
+      align-items: center;gap: 6px;
+    }
+    .statusbar-right svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+    .battery-text {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* ---- Dock栏 ---- */
+    #dock {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding-bottom: 8px;
+      background: var(--dock-bg);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border-top: 0.5px solid var(--glass-border);
+    }
+    .dock-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 13.5px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      position: relative;
+      background: var(--bg-tertiary);
+    }
+    .dock-icon:active {
+      transform: scale(0.9);
+    }
+    .dock-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ---- 主内容区域 ---- */
+    #home-content {
+      position: absolute;
+      top: 44px;
+      left: 0;
+      width: 100%;
+      bottom: 88px;
+      overflow: hidden;
+    }
+
+    /* ---- 页面滑动容器 ---- */
+    #pages-container {
+      display: flex;
+      height: 100%;
+      transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);will-change: transform;
+    }
+    .home-page {
+      min-width: 100%;
+      width: 100%;
+      height: 100%;
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: auto;
+      gap: 20px0;
+      align-content: start;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .home-page::-webkit-scrollbar { display: none; }
+
+    /* ---- 页面指示器 ---- */
+    #page-indicator {
+      position: absolute;
+      bottom: 92px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      padding: 4px 0;
+      z-index: 4;
+    }
+    .page-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      opacity: 0.3;
+      transition: opacity 0.3s;
+      cursor: pointer;
+    }
+    .page-dot.active {
+      opacity: 1;
+    }
+
+    /* ---- App图标 ---- */
+    .app-icon-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .app-icon-wrapper.editing {
+      animation: icon-wobble 0.25s ease-in-out infinite alternate;
+    }
+    @keyframes icon-wobble {
+      0% { transform: rotate(-2deg); }
+      100% { transform: rotate(2deg); }
+    }
+    .app-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 13.5px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: transform 0.15s ease;
+      background: var(--bg-tertiary);
+    }
+    .app-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .app-icon-label {
+      font-size: 11px;
+      color: var(--text-primary);
+      text-align: center;
+      max-width: 70px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    }
+    .app-icon .delete-badge {
+      display: none;
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--danger);
+      color: #fff;
+      font-size: 14px;
+      line-height: 22px;
+      text-align: center;
+      z-index: 2;
+      cursor: pointer;}
+    .app-icon-wrapper.editing .delete-badge {
+      display: block;
+    }
+
+    /* ---- Widget（小组件） ---- */
+    .widget-item {
+      border-radius: 16px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 0.5px solid var(--glass-border);
+      padding: 12px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .widget-item:active {
+      transform: scale(0.97);
+    }
+    .widget-item.editing {
+      animation: icon-wobble 0.25s ease-in-out infinite alternate;
+    }
+    .widget-item .delete-badge {
+      display: none;
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--danger);
+      color: #fff;
+      font-size: 14px;
+      line-height: 22px;
+      text-align: center;
+      z-index: 2;
+      cursor: pointer;
+    }
+    .widget-item.editing .delete-badge {
+      display: block;
+    }
+
+    /* Widget尺寸：小=2列1行, 中=2列2行, 大=4列2行 */
+    .widget-small { grid-column: span 2; min-height: 76px; }
+    .widget-medium { grid-column: span 2; min-height: 160px; }
+    .widget-large { grid-column: span 4; min-height: 160px; }
+
+    .widget-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .widget-body {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .widget-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .widget-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      position: absolute;
+      top: 0;
+      left: 0;}
+    .widget-image-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 10px 12px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.6));
+      border-radius: 0 0 16px 16px;
+    }
+    .widget-image-overlay .widget-title {
+      color: rgba(255,255,255,0.7);
+    }
+    .widget-image-overlay .widget-body {
+      color: #fff;
+      font-size: 16px;
+    }
+
+    /* ---- App容器 ---- */
+    #app-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-primary);
+      transform: scale(0.9);
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.35s ease;
+      overflow: hidden;
+      border-radius: 0;
+    }
+    #layer-app.active #app-container {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    /* ---- 锁屏层 ---- */
+    #layer-lockscreen {
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.4s ease-in;
+      pointer-events: auto;
+    }
+    #layer-lockscreen.unlocked {
+      transform: translateY(-100%);
+      pointer-events: none;
+    }
+    #layer-lockscreen.hidden {
+      display: none;
+    }
+    .lockscreen-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      filter: blur(20px) brightness(0.7);
+    }
+    .lockscreen-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: #fff;
+    }
+    .lockscreen-time {
+      font-size: 72px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .lockscreen-date {
+      font-size: 18px;
+      font-weight: 400;
+      opacity: 0.85;
+    }
+    .lockscreen-hint {
+      position: absolute;
+      bottom: 40px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+      z-index: 2;
+      animation: breathe 2.5s ease-in-out infinite;
+    }
+    .lockscreen-hint svg {
+      display: block;
+      margin: 0 auto 6px;
+      width: 24px;
+      height: 24px;
+      fill: rgba(255,255,255,0.7);
+    }
+    @keyframes breathe {
+      0%, 100% { opacity: 0.5; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-6px); }
+    }
+
+    /* ---- 开机动画层 ---- */
+    #layer-boot {
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      transition: opacity 0.5s ease;
+    }
+    #layer-boot.hidden {
+      opacity: 0;pointer-events: none;
+    }
+    #boot-canvas {
+      width: 100%;
+      height: 100%;}
+
+    /* ---- 引导页 ---- */
+    #layer-onboarding {
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    .onboarding-step {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 340px;
+      gap: 20px;
+      animation: fadeInUp 0.4s ease;
+    }
+    .onboarding-step.active {
+      display: flex;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .onboarding-logo {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: 8px;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .onboarding-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.5;}
+    .onboarding-avatar-picker {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      border: 2px dashed var(--text-tertiary);
+      transition: border-color 0.2s;
+    }
+    .onboarding-avatar-picker:hover {
+      border-color: var(--accent);
+    }
+    .onboarding-avatar-picker img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .onboarding-avatar-picker svg {
+      width: 36px;
+      height: 36px;
+      fill: var(--text-tertiary);
+    }
+
+    /* ---- 通用输入框 ---- */
+    .input-field {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: none;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 16px;
+      outline: none;
+      font-family: inherit;
+    }
+    .input-field::placeholder {
+      color: var(--text-tertiary);
+    }
+    .input-field:focus {
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    textarea.input-field {
+      resize: none;
+      min-height: 80px;
+      line-height: 1.5;}
+    .input-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      align-self: flex-start;
+    }
+
+    /* ---- 通用按钮 ---- */
+    .btn {
+      padding: 14px 24px;
+      border-radius: 14px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.2s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--accent);
+    }
+
+    /* ---- 加载旋转图标 ---- */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ---- Toast提示 ---- */
+    .toast {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      padding: 12px 20px;
+      border-radius: 14px;
+      background: var(--toast-bg);
+      color: var(--toast-text);
+      font-size: 14px;
+      font-weight: 500;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 201;
+      pointer-events: none;
+      max-width: 360px;
+      text-align: center;
+      white-space: pre-line;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);pointer-events: auto;
+    }
+    .toast.success { border-left: 3px solid var(--accent-secondary); }
+    .toast.error { border-left: 3px solid var(--danger); }
+    .toast.warning { border-left: 3px solid var(--warning); }
+    .toast.info { border-left: 3px solid var(--accent); }
+
+    /* ---- 底部弹出Sheet ---- */
+    .bottom-sheet-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--overlay-bg);
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 51;
+    }
+    .bottom-sheet-overlay.show { opacity: 1; }
+
+    .bottom-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      max-height: 85vh;
+      background: var(--bg-secondary);
+      border-radius: 16px 16px 0 0;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+      z-index: 52;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .bottom-sheet.show { transform: translateY(0); }
+
+    .bottom-sheet-handle {
+      width: 36px;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--text-quaternary);
+      margin: 8px auto 4px;
+    }
+    .bottom-sheet-title {
+      font-size: 17px;
+      font-weight: 600;
+      text-align: center;
+      padding: 12px 16px;
+      color: var(--text-primary);
+    }
+    .bottom-sheet-body {
+      padding: 0 16px 34px;
+    }
+
+    /* ---- 设置列表样式 ---- */
+    .settings-group {
+      margin-bottom: 24px;
+    }
+    .settings-group-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 16px 8px;
+    }
+    .settings-list {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .settings-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      min-height: 44px;
+      border-bottom: 0.5px solid var(--separator);
+      cursor: pointer;
+      transition: background0.15s;
+    }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-item:active { background: var(--input-bg); }
+    .settings-item-left {
+      display: flex;
+      align-items: center;gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+    .settings-item-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;}
+    .settings-item-text {
+      font-size: 16px;
+      color: var(--text-primary);
+    }
+    .settings-item-value {
+      font-size: 15px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .settings-item-arrow {
+      color: var(--text-quaternary);
+      margin-left: 4px;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ---- 开关 ---- */
+    .toggle-switch {
+      width: 51px;
+      height: 31px;
+      border-radius: 16px;
+      background: var(--switch-bg);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+      flex-shrink: 0;
+    }
+    .toggle-switch.active {
+      background: var(--switch-active);
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: transform 0.3s;
+    }
+    .toggle-switch.active::after {
+      transform: translateX(20px);
+    }
+
+    /* ---- 确认弹窗 ---- */
+    .confirm-dialog {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .confirm-dialog.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .confirm-dialog-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--overlay-bg);
+    }
+    .confirm-dialog-box {
+      position: relative;
+      width: 270px;
+      background: var(--bg-elevated);
+      border-radius: 14px;
+      overflow: hidden;
+      text-align: center;
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);}
+    .confirm-dialog-body {
+      padding: 20px 16px;
+    }
+    .confirm-dialog-title {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .confirm-dialog-message {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.4;}
+    .confirm-dialog-actions {
+      display: flex;
+      border-top: 0.5px solid var(--separator);
+    }
+    .confirm-dialog-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: transparent;
+      font-size: 17px;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--accent);
+      transition: background 0.15s;
+    }
+    .confirm-dialog-btn:active {
+      background: var(--input-bg);
+    }
+    .confirm-dialog-btn + .confirm-dialog-btn {
+      border-left: 0.5px solid var(--separator);
+    }
+    .confirm-dialog-btn.danger {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    /* ---- 设置页面内部导航栏 ---- */
+    .app-navbar {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .app-navbar-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 17px;
+      font-weight: 600;
+    }
+    .app-navbar-btn {
+      font-size: 16px;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ---- 错误日志样式 ---- */
+    .error-log-item {
+      padding: 12px;
+      border-bottom: 0.5px solid var(--separator);
+      font-size: 12px;
+      font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    }
+    .error-log-time {
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+      font-size: 11px;
+    }
+    .error-log-type {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-right: 6px;
+    }
+    .error-log-type.error { background: rgba(255,69,58,0.2); color: var(--danger); }
+    .error-log-type.warn { background: rgba(255,214,10,0.2); color: var(--warning); }
+    .error-log-type.info { background: rgba(10,132,255,0.2); color: var(--accent); }
+    .error-log-message {
+      color: var(--text-primary);
+      word-break: break-all;
+      line-height: 1.4;margin-top: 4px;
+    }
+    .error-log-stack {
+      color: var(--text-tertiary);
+      margin-top: 4px;white-space: pre-wrap;word-break: break-all;
+      font-size: 10px;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    .error-log-copy {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 0;
+      font-family: inherit;
+    }
+
+    /* ---- 隐藏辅助 ---- */
+    .hidden { display: none !important; }
+    .no-scroll { overflow: hidden !important; }</style>
+</head>
+<body>
+
+  <!--============================================================手机容器
+       ============================================================ -->
+  <div id="phone-container">
+
+    <!-- Layer 1: 壁纸 -->
+    <div id="layer-wallpaper" class="layer"></div>
+
+    <!-- Layer 2: 模糊遮罩 -->
+    <div id="layer-blur" class="layer"></div>
+
+    <!-- Layer 5: 状态栏 -->
+    <div id="layer-statusbar" class="layer">
+      <div id="statusbar">
+        <span id="statusbar-time">00:00</span>
+        <div class="statusbar-right">
+          <svg id="statusbar-wifi" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l33 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+          <svg id="statusbar-battery" viewBox="0 0 24 24"><path d="M17 5H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-1h1c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1h-1V7c0-1.1-.9-2-2-2zm0 12H3V7h14v10z"/></svg>
+          <span class="battery-text" id="statusbar-battery-text">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 3+4: 主内容（Widget + 图标网格） -->
+    <div id="home-content"><div id="pages-container"></div>
+    </div>
+
+    <!-- 页面指示器 -->
+    <div id="page-indicator"></div>
+
+    <!-- Layer 5: Dock栏 -->
+    <div id="layer-dock">
+      <div id="dock"></div>
+    </div>
+
+    <!-- Layer App: App全屏容器 -->
+    <div id="layer-app" class="layer">
+      <div id="app-container"></div>
+    </div>
+
+    <!-- Layer Overlay: 弹窗/Sheet -->
+    <div id="layer-overlay" class="layer"></div>
+
+    <!-- Layer Lockscreen: 锁屏 -->
+    <div id="layer-lockscreen" class="layer">
+      <div class="lockscreen-bg" id="lockscreen-bg"></div>
+      <div class="lockscreen-content">
+        <div class="lockscreen-time" id="lockscreen-time">00:00</div>
+        <div class="lockscreen-date" id="lockscreen-date"></div>
+      </div>
+      <div class="lockscreen-hint">
+        <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
+        上滑解锁
+      </div>
+    </div>
+
+    <!-- Layer Boot: 开机动画 -->
+    <div id="layer-boot" class="layer">
+      <canvas id="boot-canvas"></canvas>
+    </div>
+
+    <!-- Layer Onboarding: 首次引导 -->
+    <div id="layer-onboarding" class="layer">
+      <!-- 由JS 动态填充 -->
+    </div>
+
+    <!-- Layer Toast -->
+    <div id="layer-toast" class="layer"></div></div>
+
+  <!-- ============================================================
+       外部依赖
+       ============================================================ -->
+  <script src="https://unpkg.com/dexie@3/dist/dexie.js"></script>
+
+  <!-- ============================================================
+       模块加载
+       ============================================================ -->
+  <script type="module">
+    import { initDB } from './core/db.js';
+    import { initRouter } from './core/router.js';
+    import { initState } from './core/state.js';
+    import { initUtils } from './core/utils.js';
+    import { initLockscreen } from './screens/lockscreen.js';
+    import { initHomescreen } from './screens/homescreen.js';
+    import { initSettings } from './screens/settings.js';
+
+    /*---- 启动顺序 ---- */
+    async function boot() {
+      try {
+        await initDB();
+        initUtils();
+        await initState();
+        initRouter();
+        initLockscreen();
+        await initHomescreen();
+        initSettings();
+
+        console.log('[SHADOW] Boot complete');
+      } catch (err) {
+        console.error('[SHADOW] Boot failed:', err);}
+    }
+
+    boot();
+
+    /* ---- 注册 Service Worker ---- */
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+
+</body>
+</html>
